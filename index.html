@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOURA BYPASSER</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Arial Black', sans-serif; text-transform: uppercase; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            background: radial-gradient(circle at center, #0f172a, #000000); 
+            padding: 10px; padding-bottom: 110px; color: white; overflow-x: hidden;
+        }
+
+        /* --- ANIMATED SERVER LOCK SCREEN --- */
+        #serverLock {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.99); backdrop-filter: blur(60px);
+            z-index: 10000; display: none; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .lock-content h1 { color: #FF0000; font-size: 2rem; text-shadow: 0 0 20px #FF0000; animation: pulse 1.5s infinite; }
+        .lock-content p { font-size: 1.1rem; margin: 12px 0; font-weight: 900; opacity: 0; animation: slideUp 0.8s forwards; }
+        .ln1 { color: #00E5FF; animation-delay: 0.3s; }
+        .ln2 { color: #FFCC00; animation-delay: 0.6s; }
+        .ln3 { color: #39FF14; animation-delay: 0.9s; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- BAN SCREEN --- */
+        #banScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(139, 0, 0, 0.98); backdrop-filter: blur(60px);
+            z-index: 10001; display: none; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
+        .ban-content h1 { 
+            color: #FF0000; font-size: 3rem; text-shadow: 0 0 30px #FF0000; 
+            animation: shake 0.5s infinite; margin-bottom: 20px;
+        }
+        .ban-content p { font-size: 1.3rem; margin: 15px 0; font-weight: 900; color: #FFF; }
+        .ban-icon { font-size: 5rem; margin-bottom: 20px; animation: pulse 1s infinite; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        /* --- AD CONTAINERS --- */
+        .ad-container { width: 340px; height: 70px; margin: 15px auto; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.02); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .sticky-footer-ad { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(0, 0, 0, 0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; border-top: 2px solid #00E5FF; }
+
+        /* --- UI ELEMENTS --- */
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; }
+        .input-card { padding: 35px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        h2 { color: #00E5FF; text-shadow: 0 0 15px #00E5FF; margin: 0 0 25px 0; font-size: 1.2rem; }
+        input { width: 100%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 15px; color: white; margin-bottom: 15px; outline: none; font-weight: bold; }
+        #u-url { text-transform: none !important; font-family: sans-serif; }
+        .send-btn { width: 100%; padding: 16px; background: #00E5FF; color: #000; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(0, 229, 255, 0.3); }
+        .send-btn:disabled { 
+            background: #666; 
+            cursor: not-allowed; 
+            opacity: 0.5;
+        }
+        .cooldown-timer {
+            color: #FFCC00;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-weight: 900;
+            display: none;
+        }
+
+        /* --- HISTORY BOXES --- */
+        #historyList { width: 100%; max-width: 450px; }
+        .msg-box { padding: 25px; margin-bottom: 15px; position: relative; border-left: 5px solid #00E5FF; animation: slideUp 0.5s ease; }
+        .badge { position: absolute; top: 15px; right: 15px; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+        .badge-latest { background: #00E5FF; color: #000; }
+        .badge-old { background: rgba(255,255,255,0.1); color: #888; }
+        .timer { color: #FFCC00; font-size: 11px; margin: 8px 0; display: block; font-weight: 900; }
+        .done { color: #39FF14; font-size: 11px; margin: 8px 0; display: block; font-weight: 900; }
+        .reply-box { margin-top: 15px; padding: 18px; background: rgba(0,0,0,0.6); border-radius: 15px; border: 1px solid #39FF14; }
+        .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+        .act-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; font-size: 11px; }
+        .user-id-display { color: #FFCC00; font-size: 10px; margin: 5px 0; font-weight: 900; }
+    </style>
+</head>
+<body>
+
+    <!-- ANIMATED SERVER LOCK SCREEN -->
+    <div id="serverLock">
+        <div class="lock-content">
+            <h1>ACCESS DENIED 🛑</h1>
+            <p class="ln1">SERVER IS OFFLINE NOW.</p>
+            <p class="ln2">PLEASE TRY AGAIN LATER.</p>
+            <p class="ln3">SERVER WILL BE ONLINE SOON.</p>
+        </div>
+    </div>
+
+    <!-- BAN SCREEN -->
+    <div id="banScreen">
+        <div class="ban-content">
+            <div class="ban-icon">🚫</div>
+            <h1>YOU ARE BANNED!</h1>
+            <p>YOUR ACCOUNT HAS BEEN BANNED BY ADMIN</p>
+            <p style="color: #FFCC00;">CONTACT ADMIN FOR MORE INFO</p>
+        </div>
+    </div>
+
+    <!-- PERMANENT TOP AD -->
+    <div class="ad-container" id="top-ad-frame"></div>
+
+    <div class="glass input-card">
+        <h2>LOURA LINK BYPASSER</h2>
+        <input type="text" id="u-name" placeholder="ENTER YOUR NAME">
+        <input type="text" id="u-url" placeholder="PASTE URL HERE">
+        <button class="send-btn" id="sendBtn" onclick="sendData()">SEND NOW</button>
+        <div class="cooldown-timer" id="cooldownTimer"></div>
+    </div>
+
+    <!-- PERMANENT MIDDLE AD -->
+    <div class="ad-container" id="mid-ad-frame"></div>
+
+    <div id="historyList"></div>
+
+    <!-- STICKY BOTTOM AD -->
+    <div class="sticky-footer-ad" id="bot-ad-frame"></div>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmDiRSOX_CTqXNmYThO4T9IRMLhV3cZxA",
+        authDomain: "final-destination-ab4bf.firebaseapp.com",
+        databaseURL: "https://final-destination-ab4bf-default-rtdb.firebaseio.com",
+        projectId: "final-destination-ab4bf",
+        storageBucket: "final-destination-ab4bf.firebasestorage.app",
+        messagingSenderId: "115613376500",
+        appId: "1:115613376500:web:d4da13ae9a2f1822b6e3a1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Settings
+    const AD_KEY = '2c41305192cdcb14026fd376bd3b59ac';
+    const TELE_TOKEN = "7958195817:AAHhEcwv4iQpPyVxSDrRTQjpyG_FD5rH42k";
+    const TELE_ID = "-1003671655172";
+    const COOLDOWN_SECONDS = 30;
+
+    let uid = localStorage.getItem('rd_uid') || "U" + Math.random().toString(36).substr(2, 7).toUpperCase();
+    localStorage.setItem('rd_uid', uid);
+
+    let cooldownEndTime = 0;
+    let cooldownInterval = null;
+
+    // --- PERFECT AD ENGINE (Isolated Iframes) ---
+    function forceShowAd(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '320px';
+        iframe.style.height = '50px';
+        iframe.style.border = 'none';
+        iframe.style.overflow = 'hidden';
+        
+        container.appendChild(iframe);
+
+        const adHtml = `
+            <body style="margin:0; padding:0; display:flex; justify-content:center; align-items:center;">
+                <script type="text/javascript">
+                    atOptions = { 'key' : '${AD_KEY}', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+                <\/script>
+                <script type="text/javascript" src="https://www.highperformanceformat.com/${AD_KEY}/invoke.js"><\/script>
+            </body>
+        `;
+        
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(adHtml);
+        iframe.contentWindow.document.close();
+    }
+
+    // Load Main Ads
+    forceShowAd('top-ad-frame');
+    forceShowAd('mid-ad-frame');
+    forceShowAd('bot-ad-frame');
+
+    // Check Ban Status
+    db.ref('banned_users/' + uid).on('value', snap => {
+        const isBanned = snap.val() === true;
+        document.getElementById('banScreen').style.display = isBanned ? 'flex' : 'none';
+    });
+
+    // Server Sync
+    db.ref('server_config/isLocked').on('value', snap => {
+        document.getElementById('serverLock').style.display = snap.val() ? 'flex' : 'none';
+    });
+
+    // Load Cooldown from localStorage
+    const savedCooldown = localStorage.getItem('rd_cooldown_' + uid);
+    if (savedCooldown) {
+        cooldownEndTime = parseInt(savedCooldown);
+        if (cooldownEndTime > Date.now()) {
+            startCooldown();
+        } else {
+            localStorage.removeItem('rd_cooldown_' + uid);
+        }
+    }
+
+    function startCooldown() {
+        const btn = document.getElementById('sendBtn');
+        const timer = document.getElementById('cooldownTimer');
+        
+        btn.disabled = true;
+        timer.style.display = 'block';
+
+        if (cooldownInterval) clearInterval(cooldownInterval);
+
+        cooldownInterval = setInterval(() => {
+            const remaining = Math.ceil((cooldownEndTime - Date.now()) / 1000);
+            
+            if (remaining <= 0) {
+                clearInterval(cooldownInterval);
+                btn.disabled = false;
+                timer.style.display = 'none';
+                localStorage.removeItem('rd_cooldown_' + uid);
+            } else {
+                timer.textContent = `⏱️ PLEASE WAIT ${remaining} SECONDS`;
+            }
+        }, 100);
+    }
+
+    // Generate User ID from name
+    function generateUserId(name) {
+        const cleanName = name.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        return cleanName + randomNum;
+    }
+
+    // Send to Telegram with new format
+    async function sendToTele(n, u, userId) {
+        const msg = `🔔----🔗----🔔\n\n👤: ${n}\n🔗: ${u}\n🆔: ${userId}`;
+        try { 
+            await fetch(`https://api.telegram.org/bot${TELE_TOKEN}/sendMessage`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    chat_id: TELE_ID, 
+                    text: msg 
+                }) 
+            }); 
+        } catch(e){
+            console.error('Telegram send error:', e);
+        }
+    }
+
+    function sendData() {
+        const n = document.getElementById('u-name').value.trim();
+        const u = document.getElementById('u-url').value.trim();
+        
+        if(!n || !u) {
+            alert("⚠️ PLEASE FILL ALL FIELDS!");
+            return;
+        }
+
+        // Generate new user ID based on name
+        const newUserId = generateUserId(n);
+
+        // Set cooldown
+        cooldownEndTime = Date.now() + (COOLDOWN_SECONDS * 1000);
+        localStorage.setItem('rd_cooldown_' + uid, cooldownEndTime.toString());
+
+        db.ref('rd_history/' + uid).push({ 
+            name: n.toUpperCase(), 
+            url: u,
+            userId: newUserId,
+            time: new Date().toLocaleString(), 
+            timestamp: Date.now(), 
+            replyUrl: "", 
+            finishTime: 0 
+        });
+        
+        sendToTele(n.toUpperCase(), u, newUserId);
+        alert("✅ SENT!");
+        
+        document.getElementById('u-name').value = '';
+        document.getElementById('u-url').value = '';
+        
+        startCooldown();
+    }
+
+    function getDur(s, e) {
+        const d = Math.floor((e - s) / 1000);
+        return d < 60 ? d + "S" : Math.floor(d / 60) + "M " + (d % 60) + "S";
+    }
+
+    // Render History
+    db.ref('rd_history/' + uid).on('value', snap => {
+        const list = document.getElementById('historyList');
+        list.innerHTML = "";
+        const data = snap.val();
+        if(!data) return;
+
+        const entries = Object.entries(data).reverse();
+        entries.forEach(([id, msg], index) => {
+            const isLatest = index === 0;
+            const hasReply = msg.replyUrl !== "";
+            const div = document.createElement('div');
+            div.className = "glass msg-box";
+            
+            let tHtml = hasReply ? `<span class="done">COMPLETED IN: ${msg.finishTime ? getDur(msg.timestamp, msg.finishTime) : "DONE"}</span>` : 
+                                   `<span class="timer" id="t_${id}">WAITING: ...</span>`;
+            if(!hasReply) setInterval(() => { const el = document.getElementById(`t_${id}`); if(el) el.innerText = "WAITING: " + getDur(msg.timestamp, Date.now()); }, 1000);
+
+            div.innerHTML = `
+                <div class="badge ${isLatest ? 'badge-latest' : 'badge-old'}">${isLatest ? 'LATEST ✨' : 'OLD ✅'}</div>
+                <p style="color:#00E5FF; font-size:12px; margin:0;">${msg.name}</p>
+                <p class="user-id-display">🆔: ${msg.userId || 'N/A'}</p>
+                <p style="color:#666; font-size:9px; margin:5px 0;">${msg.time}</p>
+                ${tHtml}
+                <p style="color:#FFF; font-size:11px; word-break:break-all; text-transform:none;">${msg.url}</p>
+                ${hasReply ? `<div class="reply-box">
+                    <span style="color:#39FF14; font-size:11px; font-weight:900;">FINAL LINK:</span>
+                    <p style="color:#FFF; font-size:12px; word-break:break-all; text-transform:none; margin:10px 0;">${msg.replyUrl}</p>
+                    <div class="btn-row">
+                        <button class="act-btn" style="background:#39FF14;" onclick="window.open('${msg.replyUrl}', '_blank')">OPEN</button>
+                        <button class="act-btn" style="background:#FFF;" onclick="copyL('${msg.replyUrl}')">COPY</button>
+                    </div>
+                </div>` : ``}
+            `;
+            list.appendChild(div);
+
+            // ADS IN HISTORY: Every 2 Boxes
+            if((index + 1) % 2 === 0) {
+                const adDiv = document.createElement('div');
+                const adId = 'ad_box_' + index;
+                adDiv.id = adId;
+                adDiv.className = 'ad-container';
+                list.appendChild(adDiv);
+                forceShowAd(adId);
+            }
+        });
+    });
+
+    function copyL(t) {
+        const el = document.createElement('textarea'); el.value = t; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); alert("COPIED!");
+    }
+</script>
+</body>
+</html>

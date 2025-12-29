@@ -1,0 +1,59 @@
+{
+  "title": "FINAL DESTINATION BY RD",
+  "description": "",
+  "keywords": [],
+  "language": "en",
+  "viewport": "width=device-width, initial-scale=1.0",
+  "forms": 0,
+  "links": 0,
+  "images": 0,
+  "scripts": 3,
+  "stylesheets": 0,
+  "meta_tags": {
+    "viewport": "width=device-width, initial-scale=1.0"
+  },
+  "api_endpoints": [],
+  "backend_files": [],
+  "backend_technologies": [
+    "nodejs"
+  ],
+  "response_headers": {
+    "Connection": "keep-alive",
+    "Content-Length": "5051",
+    "Server": "GitHub.com",
+    "Content-Type": "text/html; charset=utf-8",
+    "Last-Modified": "Mon, 29 Dec 2025 09:20:35 GMT",
+    "Access-Control-Allow-Origin": "*",
+    "Strict-Transport-Security": "max-age=31556952",
+    "Etag": "W/\"695247e3-3cf4\"",
+    "Expires": "Mon, 29 Dec 2025 12:21:27 GMT",
+    "Cache-Control": "max-age=600",
+    "Content-Encoding": "gzip",
+    "x-proxy-cache": "MISS",
+    "X-GitHub-Request-Id": "51F4:2F9ED8:3E90F41:4085F9E:69526FEF",
+    "Accept-Ranges": "bytes",
+    "Date": "Mon, 29 Dec 2025 12:11:28 GMT",
+    "Via": "1.1 varnish",
+    "Age": "1",
+    "X-Served-By": "cache-bur-kbur8200138-BUR",
+    "X-Cache": "HIT",
+    "X-Cache-Hits": "1",
+    "X-Timer": "S1767010288.337784,VS0,VE1",
+    "Vary": "Accept-Encoding",
+    "X-Fastly-Request-ID": "026e0102d9fbece61727bf42c4044218fbb5864c"
+  },
+  "backend_files_found": [],
+  "scrap_id": "177ae7973f",
+  "url": "https://imrdas.github.io/FINAL-DESTINATION-/",
+  "timestamp": "20251229_121127",
+  "domain": "imrdas_github_io",
+  "total_assets_found": 2,
+  "assets_downloaded": 2,
+  "backend_files_downloaded": 1,
+  "assets_failed": 0,
+  "asset_types": {
+    ".js": 2
+  },
+  "total_size": 209864,
+  "vulnerabilities_found": []
+}
